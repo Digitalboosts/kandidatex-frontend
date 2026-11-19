@@ -5,9 +5,9 @@ import { LEGAL_IS_DRAFT } from '@/components/legal/legal-config';
 import { Fill, FillEmail, LegalDocument, type LegalSection } from '@/components/legal/legal-document';
 
 export const metadata: Metadata = {
-  title: 'Terms of Service · Interview Monitor',
+  title: 'Terms of Service · Kandidatex',
   description:
-    'The terms for using Interview Monitor: accounts, the subscription plan, your responsibilities to candidates, how AI flags should be used, and liability.',
+    'The terms for using Kandidatex: accounts, the subscription plan, your responsibilities to candidates, how AI flags should be used, and liability.',
   alternates: { canonical: '/terms' },
   // Kept out of search results until every legal detail is filled in.
   robots: LEGAL_IS_DRAFT ? { index: false, follow: true } : undefined,
@@ -21,7 +21,7 @@ const SECTIONS: LegalSection[] = [
       <>
         <p>
           These terms are an agreement between you and <Fill field="companyLegalName" />, <Fill field="registeredAddress" />{' '}
-          (&ldquo;we&rdquo;, &ldquo;us&rdquo;), for the use of Interview Monitor (the &ldquo;Service&rdquo;). By creating
+          (&ldquo;we&rdquo;, &ldquo;us&rdquo;), for the use of Kandidatex (the &ldquo;Service&rdquo;). By creating
           an account, buying a plan or joining an interview, you agree to them.
         </p>
         <p>
@@ -41,7 +41,7 @@ const SECTIONS: LegalSection[] = [
     title: 'The Service',
     body: (
       <>
-        <p>Interview Monitor helps interviewers see a candidate&rsquo;s screen during a remote interview. It lets you:</p>
+        <p>Kandidatex helps interviewers see a candidate&rsquo;s screen during a remote interview. It lets you:</p>
         <ul>
           <li>create an interview and share a joining link with the candidate;</li>
           <li>
@@ -383,7 +383,7 @@ export default async function TermsPage() {
       sections={SECTIONS}
       intro={
         <p>
-          These terms set out how Interview Monitor may be used, what we provide, and what we expect from interviewers and
+          These terms set out how Kandidatex may be used, what we provide, and what we expect from interviewers and
           candidates. We&rsquo;ve kept them as plain as we can. Please read them before you use the Service.
         </p>
       }

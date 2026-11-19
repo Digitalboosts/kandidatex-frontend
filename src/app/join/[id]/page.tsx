@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { CandidateApp } from '@/components/candidate/candidate-app';
 
-export const metadata: Metadata = { title: 'Join your interview · Interview Monitor' };
+export const metadata: Metadata = { title: 'Join your interview · Kandidatex' };
 
 /**
  * Where a candidate's joining link lands. The whole candidate session runs here in

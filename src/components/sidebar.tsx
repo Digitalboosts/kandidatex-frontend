@@ -1,11 +1,12 @@
 'use client';
 
-import { CreditCard, Film, LayoutDashboard, LogOut, ScreenShare, TriangleAlert, Video } from 'lucide-react';
+import { CreditCard, Film, LayoutDashboard, LogOut, TriangleAlert, Video } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { api } from '@/lib/api';
 import { useSessionUser } from '@/lib/session';
 import { useSubscription } from '@/lib/subscription';
+import { BrandLogo } from './brand-logo';
 import { UsageMeter } from './usage-meter';
 
 const NAV = [
@@ -56,11 +57,8 @@ export function Sidebar() {
 
   return (
     <aside className="flex shrink-0 border-b border-line bg-white md:sticky md:top-0 md:h-screen md:w-60 md:flex-col md:border-b-0 md:border-r">
-      <div className="flex items-center gap-2 px-4 py-4 md:px-5 md:py-5">
-        <span className="flex size-8 items-center justify-center rounded-lg bg-brand-600 text-white">
-          <ScreenShare className="size-4" aria-hidden />
-        </span>
-        <span className="hidden font-semibold tracking-tight sm:inline">Interview Monitor</span>
+      <div className="flex items-center px-4 py-4 md:px-5 md:py-5">
+        <BrandLogo className="h-6 md:h-7" />
       </div>
       <nav className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto px-2 md:flex-col md:items-stretch md:overflow-visible md:px-3">
         {NAV.map(({ href, label, icon: Icon }) => {

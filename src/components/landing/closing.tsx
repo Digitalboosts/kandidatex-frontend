@@ -82,7 +82,7 @@ export function SiteFooter() {
         </nav>
       </div>
       <div className="border-t border-white/10">
-        <p className="mx-auto max-w-6xl px-4 py-6 text-xs sm:px-6">© {year} Interview Monitor. All rights reserved.</p>
+        <p className="mx-auto max-w-6xl px-4 py-6 text-xs sm:px-6">© {year} Kandidatex. All rights reserved.</p>
       </div>
     </footer>
   );

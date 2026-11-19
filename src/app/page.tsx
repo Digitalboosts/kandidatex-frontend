@@ -13,7 +13,7 @@ import { RevealOnScroll } from '@/components/landing/reveal-on-scroll';
 import { SiteNav } from '@/components/landing/site-nav';
 import { Trust } from '@/components/landing/trust';
 
-const TITLE = 'Interview Monitor: see the screen your webcam can’t';
+const TITLE = 'Kandidatex: see the screen your webcam can’t';
 const DESCRIPTION =
   'Remote technical interviews with the whole screen in view. The candidate points a phone at their laptop, you watch live, and AI flags AI assistants on screen for your review.';
 
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     url: '/',
-    siteName: 'Interview Monitor',
+    siteName: 'Kandidatex',
     locale: 'en_IN',
     title: TITLE,
     description: DESCRIPTION,

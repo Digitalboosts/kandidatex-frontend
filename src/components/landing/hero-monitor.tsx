@@ -105,7 +105,7 @@ export function HeroMonitor() {
   return (
     <figure ref={root} className="relative mx-auto max-w-5xl">
       <figcaption className="sr-only">
-        Illustration of the Interview Monitor live dashboard. The candidate&rsquo;s laptop screen is shown through their
+        Illustration of the Kandidatex live dashboard. The candidate&rsquo;s laptop screen is shown through their
         phone camera with status cards for screen, visibility, lighting, stability and network. The event timeline fills
         with: candidate joined, calibration passed, VS Code scanned as normal, then ChatGPT with review recommended at 96%
         confidence, and an &ldquo;Unusual screen activity&rdquo; popup appears.

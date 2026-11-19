@@ -1,4 +1,4 @@
-import { ScreenShare } from 'lucide-react';
+import { BrandLogo } from '@/components/brand-logo';
 import type { ReactNode } from 'react';
 import type { Tone } from '@/lib/candidate-camera';
 
@@ -35,11 +35,8 @@ export function StepShell({ children, wide = false }: { children: ReactNode; wid
   return (
     <main className="flex min-h-dvh justify-center p-4 sm:items-center sm:p-6">
       <div className={`w-full ${wide ? 'max-w-5xl' : 'max-w-md'}`}>
-        <div className="mb-5 flex items-center gap-2">
-          <span className="flex size-9 items-center justify-center rounded-lg bg-brand-600 text-white">
-            <ScreenShare className="size-5" aria-hidden />
-          </span>
-          <span className="text-lg font-semibold tracking-tight">Interview Monitor</span>
+        <div className="mb-5 flex items-center">
+          <BrandLogo className="h-8" />
         </div>
         {children}
       </div>

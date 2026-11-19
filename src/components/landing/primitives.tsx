@@ -1,5 +1,5 @@
-import { ScreenShare } from 'lucide-react';
 import Link from 'next/link';
+import { BrandLogo } from '@/components/brand-logo';
 import type { CSSProperties, ReactNode } from 'react';
 
 /** Spread onto an element to fade it in as it scrolls into view (see RevealOnScroll). */
@@ -12,13 +12,10 @@ export function Logo({ tone = 'dark' }: { tone?: 'dark' | 'light' }) {
   return (
     <Link
       href="/"
-      className="inline-flex items-center gap-2 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4"
-      aria-label="Interview Monitor home"
+      className="inline-flex items-center rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4"
+      aria-label="Kandidatex home"
     >
-      <span className="flex size-8 items-center justify-center rounded-lg bg-brand-600 text-white shadow-[0_0_0_1px_rgb(255_255_255/0.12)_inset]">
-        <ScreenShare className="size-4" aria-hidden />
-      </span>
-      <span className={`font-semibold tracking-tight ${tone === 'light' ? 'text-white' : 'text-ink'}`}>Interview Monitor</span>
+      <BrandLogo tone={tone} className="h-7 sm:h-8" />
     </Link>
   );
 }

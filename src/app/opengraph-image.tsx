@@ -1,10 +1,15 @@
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { ImageResponse } from 'next/og';
 
-export const alt = 'Interview Monitor: see the screen your webcam can’t';
+export const alt = 'Kandidatex: see the screen your webcam can’t';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
-/** The social share card, drawn in code so the landing page needs no image files. */
+// The wordmark with white lettering, for the dark card. Read once at module scope.
+const logoSrc = `data:image/png;base64,${await readFile(join(process.cwd(), 'public/brand/kandidatex-light.png'), 'base64')}`;
+
+/** The social share card, drawn in code around the brand wordmark. */
 export default function OpengraphImage() {
   return new ImageResponse(
     (
@@ -20,9 +25,9 @@ export default function OpengraphImage() {
           color: 'white',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, fontSize: 30, fontWeight: 600 }}>
-          <div style={{ width: 52, height: 52, borderRadius: 12, background: '#2563eb', display: 'flex' }} />
-          Interview Monitor
+        <div style={{ display: 'flex' }}>
+          {/* eslint-disable-next-line jsx-a11y/alt-text -- decorative inside a generated image */}
+          <img src={logoSrc} height={56} width={343} />
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
           <div style={{ fontSize: 76, fontWeight: 700, letterSpacing: -2, lineHeight: 1.05 }}>

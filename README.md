@@ -1,4 +1,4 @@
-# Interview Monitor
+# Kandidatex
 
 An interviewer watches a candidate's laptop screen live, through a camera the candidate points at it. The candidate
 runs the whole session in the browser from the joining link; there is nothing to install.

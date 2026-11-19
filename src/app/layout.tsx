@@ -5,7 +5,7 @@ import './globals.css';
 export const metadata: Metadata = {
   // The public site's address, for absolute Open Graph URLs. Set SITE_URL in production.
   metadataBase: new URL(process.env.SITE_URL ?? 'http://localhost:3000'),
-  title: 'Interview Monitor',
+  title: 'Kandidatex',
   description: 'Live screen monitoring for remote interviews.',
 };
 

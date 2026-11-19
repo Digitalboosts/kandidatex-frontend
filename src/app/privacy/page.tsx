@@ -4,9 +4,9 @@ import { LEGAL_IS_DRAFT } from '@/components/legal/legal-config';
 import { Fill, FillEmail, LegalDocument, type LegalSection } from '@/components/legal/legal-document';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy · Interview Monitor',
+  title: 'Privacy Policy · Kandidatex',
   description:
-    'What Interview Monitor collects from interviewers and candidates, why, who can see it, how long it is kept and how to exercise your rights.',
+    'What Kandidatex collects from interviewers and candidates, why, who can see it, how long it is kept and how to exercise your rights.',
   alternates: { canonical: '/privacy' },
   // Kept out of search results until every legal detail is filled in.
   robots: LEGAL_IS_DRAFT ? { index: false, follow: true } : undefined,
@@ -19,7 +19,7 @@ const SECTIONS: LegalSection[] = [
     body: (
       <>
         <p>
-          Interview Monitor is operated by <Fill field="companyLegalName" />, <Fill field="registeredAddress" /> (&ldquo;we&rdquo;,
+          Kandidatex is operated by <Fill field="companyLegalName" />, <Fill field="registeredAddress" /> (&ldquo;we&rdquo;,
           &ldquo;us&rdquo;). This policy explains how we handle personal data under India&rsquo;s Digital Personal Data
           Protection Act, 2023 (&ldquo;DPDP Act&rdquo;), the Information Technology Act, 2000 and the rules made under them.
         </p>
@@ -165,7 +165,7 @@ const SECTIONS: LegalSection[] = [
         </ul>
         <p>
           AI readings can be wrong. They are prompts for a person to look, not decisions. No decision about a candidate is
-          made by Interview Monitor automatically.
+          made by Kandidatex automatically.
         </p>
       </>
     ),
@@ -397,7 +397,7 @@ const SECTIONS: LegalSection[] = [
     title: 'Children',
     body: (
       <p>
-        Interview Monitor is meant for adults. We don&rsquo;t knowingly process personal data of anyone under 18 without
+        Kandidatex is meant for adults. We don&rsquo;t knowingly process personal data of anyone under 18 without
         verifiable consent from a parent or lawful guardian. If you believe a child&rsquo;s data has been processed without
         it, contact us and we will delete it.
       </p>
@@ -448,7 +448,7 @@ export default async function PrivacyPage() {
       sections={SECTIONS}
       intro={
         <p>
-          Interview Monitor lets an interviewer see a candidate&rsquo;s laptop screen through a phone camera during a
+          Kandidatex lets an interviewer see a candidate&rsquo;s laptop screen through a phone camera during a
           remote interview. That means handling personal data with care. This policy explains, in plain language, what we
           collect, why, who can see it and the choices you have.
         </p>

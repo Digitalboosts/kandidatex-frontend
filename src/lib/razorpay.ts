@@ -76,7 +76,7 @@ export async function openSubscriptionCheckout(options: {
     const checkout = new Razorpay({
       key: options.keyId,
       subscription_id: options.subscriptionId,
-      name: 'Interview Monitor',
+      name: 'Kandidatex',
       description: options.description,
       prefill: options.prefill,
       theme: { color: '#2563eb' },
