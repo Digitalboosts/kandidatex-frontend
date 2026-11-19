@@ -1,0 +1,44 @@
+{
+  "name": "interview-monitor",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Interview screen monitoring: candidate browser camera -> LiveKit -> interviewer dashboard. The API is a separate Python server (docs/API.md).",
+  "engines": {
+    "node": ">=22.11"
+  },
+  "scripts": {
+    "predev": "node scripts/copy-opencv.mjs",
+    "prebuild": "node scripts/copy-opencv.mjs",
+    "predev:https": "node scripts/copy-opencv.mjs",
+    "dev": "next dev -p 3000",
+    "dev:https": "next dev -p 3000 --experimental-https",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "@livekit/components-react": "^2.9.24",
+    "@techstark/opencv-js": "4.12.0-release.1",
+    "livekit-client": "^2.23.0",
+    "lucide-react": "^1.68.0",
+    "next": "^16.4.5",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "recharts": "^3.10.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "@tailwindcss/postcss": "^4.3.4",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "eslint": "^9.39.0",
+    "eslint-config-next": "^16.4.5",
+    "tailwindcss": "^4.3.4",
+    "typescript": "^5.9.0",
+    "vitest": "^4.0.0"
+  }
+}

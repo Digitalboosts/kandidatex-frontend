@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+
+# Next.js build output and caches
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# Environment files: keep only the example in git
+.env
+.env.*
+!.env.example
+
+# Copied from node_modules by scripts/copy-opencv.mjs before dev and build
+/public/vendor/
+
+# Test output
+test-results/
+playwright-report/
+
+# Logs
+*.log
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vercel/
+
+# Self-signed certificate made by npm run dev:https
+certificates/
