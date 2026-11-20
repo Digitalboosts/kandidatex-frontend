@@ -9,7 +9,6 @@ import {
   Room,
   RoomEvent,
   Track,
-  VideoPresets,
 } from 'livekit-client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { CandidateApiError, getInterview, getLiveKitToken, isInterviewEnded, reportEvent } from './candidate-api';
@@ -49,18 +48,29 @@ const STATUS_POLL_MS = 10000;
 const CAMERA_ATTEMPTS = 5;
 const CAMERA_RETRY_MS = 800;
 
+/**
+ * The interviewer needs to read code and text on a laptop screen through this
+ * camera, so sharpness matters far more than smooth motion: capture at 1080p,
+ * allow a generous bitrate, and keep 24 fps (plenty for a mostly still screen).
+ */
+const CAPTURE = { width: 1920, height: 1080, frameRate: 24 };
+const VIDEO_ENCODING = { maxBitrate: 4_000_000, maxFramerate: 24 };
+
 const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 async function publishCamera(participant: LocalParticipant, choice: CameraChoice): Promise<void> {
   let lastError: unknown;
   for (let attempt = 0; attempt < CAMERA_ATTEMPTS; attempt++) {
     try {
-      await participant.setCameraEnabled(true, {
+      const publication = await participant.setCameraEnabled(true, {
         ...(choice.deviceId
           ? { deviceId: { exact: choice.deviceId } }
           : { facingMode: choice.facing === 'front' ? 'user' : 'environment' }),
-        resolution: VideoPresets.h720.resolution,
+        resolution: CAPTURE,
       });
+      // Tells the encoder this is detailed content (text), so it keeps edges crisp.
+      const track = publication?.track?.mediaStreamTrack;
+      if (track && 'contentHint' in track) track.contentHint = 'detail';
       return;
     } catch (error) {
       lastError = error;
@@ -129,7 +139,12 @@ export function useCandidateLiveSession(session: CandidateSession, choice: Camer
     const room = new Room({
       adaptiveStream: false,
       dynacast: false,
-      publishDefaults: { simulcast: false, videoEncoding: VideoPresets.h720.encoding },
+      publishDefaults: {
+        simulcast: false,
+        videoEncoding: VIDEO_ENCODING,
+        // On a weak connection, drop frames rather than resolution: a blurry screen is useless, a slower one isn't.
+        degradationPreference: 'maintain-resolution',
+      },
     });
 
     const refreshTrack = () => {

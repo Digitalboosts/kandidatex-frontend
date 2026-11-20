@@ -19,7 +19,7 @@ import {
   VideoTrack,
 } from '@livekit/components-react';
 import { ConnectionQuality, ConnectionState, type RemoteParticipant, type RemoteVideoTrack, Track } from 'livekit-client';
-import { CircleAlert, TriangleAlert, VideoOff, X } from 'lucide-react';
+import { CircleAlert, Maximize, Minimize, PanelRightClose, PanelRightOpen, Smartphone, TriangleAlert, VideoOff, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api } from '@/lib/api';
 import { capitalize, formatDuration } from '@/lib/format';
@@ -111,6 +111,12 @@ export function LiveMonitor({
   );
 
   const videoRef = useRef<HTMLVideoElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+  /** Width ÷ height of the candidate's video, so the player takes its shape instead of letterboxing it. */
+  const [videoRatio, setVideoRatio] = useState(16 / 9);
+  /** Large screens only: hide the timeline column so the video gets the full width. */
+  const [timelineHidden, setTimelineHidden] = useState(false);
+  const [fullscreen, setFullscreen] = useState(false);
   const [events, setEvents] = useState<MonitoringEventDTO[]>([]);
   const [status, setStatus] = useState<MonitoringStatusDTO | null>(interview.monitoringStatus ?? null);
   const [liveResult, setLiveResult] = useState<DetectionResult | null>(null);
@@ -279,6 +285,43 @@ export function LiveMonitor({
     };
   }, [cameraTrack?.publication.track, report]);
 
+  // A phone held upright sends a tall video, held sideways a wide one; it can change mid-session.
+  const videoTrack = cameraTrack?.publication.track;
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !hasVideo) return;
+    const measure = () => {
+      if (video.videoWidth && video.videoHeight) setVideoRatio(video.videoWidth / video.videoHeight);
+    };
+    measure();
+    video.addEventListener('loadedmetadata', measure);
+    video.addEventListener('resize', measure);
+    return () => {
+      video.removeEventListener('loadedmetadata', measure);
+      video.removeEventListener('resize', measure);
+    };
+  }, [hasVideo, videoTrack]);
+
+  useEffect(() => {
+    const onChange = () => setFullscreen(Boolean(stageRef.current) && document.fullscreenElement === stageRef.current);
+    document.addEventListener('fullscreenchange', onChange);
+    return () => document.removeEventListener('fullscreenchange', onChange);
+  }, []);
+
+  function toggleFullscreen() {
+    if (document.fullscreenElement) void document.exitFullscreen().catch(() => undefined);
+    else void stageRef.current?.requestFullscreen().catch(() => undefined);
+  }
+
+  const portrait = hasVideo && videoRatio < 1;
+
+  // Full screen hides everything outside the player, so a screen alert brings the interviewer back to the page.
+  const alertOpen = popup !== null;
+  useEffect(() => {
+    if (alertOpen && document.fullscreenElement) void document.exitFullscreen().catch(() => undefined);
+  }, [alertOpen]);
+  const latestToast = toasts.at(-1);
+
   const unstable = quality === ConnectionQuality.Poor || quality === ConnectionQuality.Lost;
   const wasUnstable = useRef(false);
   useEffect(() => {
@@ -317,7 +360,7 @@ export function LiveMonitor({
     : capitalize(connectionState);
 
   return (
-    <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
+    <div className={`grid gap-4 ${timelineHidden ? '' : '2xl:grid-cols-[minmax(0,1fr)_340px]'}`}>
       {candidate ? <CandidateQuality participant={candidate} onChange={setQuality} /> : null}
       <RoomAudioRenderer />
 
@@ -342,7 +385,20 @@ export function LiveMonitor({
         </div>
         <ErrorNote message={recorder.error} />
 
-        <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-slate-900">
+        {/*
+          The player takes the video's own shape and grows to the full width, but never
+          taller than the window, so the whole picture is always in view.
+        */}
+        <div
+          ref={stageRef}
+          data-testid="video-stage"
+          className={`group relative mx-auto w-full overflow-hidden ${fullscreen ? 'bg-black' : 'rounded-xl bg-slate-900'}`}
+          style={
+            fullscreen
+              ? undefined
+              : { aspectRatio: videoRatio, maxWidth: `calc((100dvh - 13rem) * ${videoRatio})`, minHeight: '16rem' }
+          }
+        >
           {cameraTrack && hasVideo ? (
             <VideoTrack
               trackRef={cameraTrack}
@@ -364,6 +420,50 @@ export function LiveMonitor({
             </div>
           ) : null}
           {videoStalled ? null : <RecordingIndicator recorder={recorder} />}
+          {portrait && !videoStalled ? (
+            <p className="absolute inset-x-0 bottom-3 mx-auto flex w-fit max-w-[90%] items-center gap-1.5 rounded-md bg-black/70 px-2.5 py-1 text-center text-xs text-white">
+              <Smartphone className="size-3.5 shrink-0" aria-hidden />
+              The phone is upright. Ask the candidate to turn it sideways for a wider view.
+            </p>
+          ) : null}
+
+          {fullscreen && latestToast ? (
+            <p
+              role="alert"
+              className="absolute bottom-3 left-3 flex max-w-md items-start gap-2 rounded-lg bg-white/95 px-3 py-2 text-sm text-ink shadow-lg"
+            >
+              <TriangleAlert
+                className={`mt-0.5 size-4 shrink-0 ${latestToast.severity === 'CRITICAL' ? 'text-bad' : 'text-warn'}`}
+                aria-hidden
+              />
+              {latestToast.message}
+            </p>
+          ) : null}
+
+          <div className="absolute right-3 top-3 flex gap-1.5 opacity-80 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+            {fullscreen ? null : (
+              <button
+                type="button"
+                onClick={() => setTimelineHidden((value) => !value)}
+                aria-pressed={timelineHidden}
+                title={timelineHidden ? 'Show the timeline beside the video' : 'Widen the video'}
+                className="hidden size-8 items-center justify-center rounded-md bg-black/60 text-white backdrop-blur hover:bg-black/80 2xl:flex"
+              >
+                {timelineHidden ? <PanelRightOpen className="size-4" aria-hidden /> : <PanelRightClose className="size-4" aria-hidden />}
+                <span className="sr-only">{timelineHidden ? 'Show timeline' : 'Widen video'}</span>
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={toggleFullscreen}
+              data-testid="video-fullscreen"
+              title={fullscreen ? 'Exit full screen (Esc)' : 'Full screen'}
+              className="flex size-8 items-center justify-center rounded-md bg-black/60 text-white backdrop-blur hover:bg-black/80"
+            >
+              {fullscreen ? <Minimize className="size-4" aria-hidden /> : <Maximize className="size-4" aria-hidden />}
+              <span className="sr-only">{fullscreen ? 'Exit full screen' : 'Full screen'}</span>
+            </button>
+          </div>
         </div>
 
         <section aria-label="Monitoring status" className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
