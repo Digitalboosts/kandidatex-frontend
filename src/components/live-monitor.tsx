@@ -251,6 +251,8 @@ export function LiveMonitor({
     id,
     cameraTrack?.publication.track?.mediaStreamTrack,
     microphoneTrack?.publication.track?.mediaStreamTrack,
+    // Only the owner records automatically, so two people watching don't save the same interview twice.
+    { autoStart: canReport },
   );
 
   // Video stops silently when packets stop arriving, with no track event, so

@@ -25,8 +25,30 @@ export interface InterviewRecorder {
   stop: () => void;
 }
 
+/** Remembers, per interview and per browser, that the interviewer switched recording off. */
+const stoppedKey = (interviewId: string) => `kandidatex:recording-stopped:${interviewId}`;
+
+function rememberStopped(interviewId: string, stopped: boolean) {
+  try {
+    if (stopped) localStorage.setItem(stoppedKey(interviewId), '1');
+    else localStorage.removeItem(stoppedKey(interviewId));
+  } catch {
+    // Storage blocked (private mode): auto-recording simply turns back on after a reload.
+  }
+}
+
+function wasStopped(interviewId: string): boolean {
+  try {
+    return localStorage.getItem(stoppedKey(interviewId)) === '1';
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Records the candidate's video (and microphone, when present) while `active`.
+ * With `autoStart`, recording is on from the start (it begins as soon as video
+ * arrives) unless the interviewer stopped it by hand for this interview.
  * Every unbroken stretch of video becomes one recording: if the candidate's
  * camera track ends or is replaced (for example after a reconnect), the
  * current recording is completed and a new one starts on the new track.
@@ -35,8 +57,14 @@ export function useInterviewRecorder(
   interviewId: string,
   videoTrack: MediaStreamTrack | undefined,
   audioTrack: MediaStreamTrack | undefined,
+  { autoStart = false }: { autoStart?: boolean } = {},
 ): InterviewRecorder {
-  const [active, setActive] = useState(false);
+  /** What the interviewer chose during this visit; null until they press a button. */
+  const [choice, setChoice] = useState<'on' | 'off' | null>(null);
+  /** A stop from an earlier visit to this page. */
+  const [stoppedBefore] = useState(() => wasStopped(interviewId));
+  // `autoStart` may turn true a moment after mount, once the signed-in user is known.
+  const active = choice === 'on' || (choice === null && autoStart && !stoppedBefore);
   const [recording, setRecording] = useState(false);
   const [progress, setProgress] = useState<RecordingProgress | null>(null);
   const [finishing, setFinishing] = useState(0);
@@ -67,7 +95,8 @@ export function useInterviewRecorder(
       .catch((caught) => {
         if (cancelled) return;
         setError(errorMessage(caught));
-        setActive(false);
+        // Off for this visit only: the next visit tries again.
+        setChoice('off');
       });
 
     return () => {
@@ -86,10 +115,14 @@ export function useInterviewRecorder(
   }, [active, videoTrack, interviewId]);
 
   const start = useCallback(() => {
+    rememberStopped(interviewId, false);
     setError(null);
-    setActive(true);
-  }, []);
-  const stop = useCallback(() => setActive(false), []);
+    setChoice('on');
+  }, [interviewId]);
+  const stop = useCallback(() => {
+    rememberStopped(interviewId, true);
+    setChoice('off');
+  }, [interviewId]);
 
   return {
     supported: recordingSupported(),

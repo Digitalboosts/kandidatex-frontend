@@ -24,21 +24,27 @@ export function RecordingIndicator({ recorder }: { recorder: InterviewRecorder }
 
   let label: string;
   if (state === 'recording') label = 'REC';
-  else if (state === 'waiting') label = 'Recording paused: waiting for video';
+  else if (state === 'waiting') label = 'Recording starts when video arrives';
   else label = 'Saving recording…';
 
   const backlog = progress ? progress.chunks - progress.uploaded : 0;
+  const uploadError = progress?.uploadError ?? null;
   return (
-    <div
-      data-testid="recording-indicator"
-      className="absolute left-3 top-3 flex items-center gap-2 rounded-md bg-black/70 px-2.5 py-1 text-xs font-medium text-white"
-    >
-      <span className={`size-2 rounded-full ${state === 'recording' ? 'animate-pulse bg-red-500' : 'bg-slate-400'}`} aria-hidden />
-      <span>{label}</span>
-      {state === 'recording' && progress ? (
-        <span className="tabular-nums text-slate-300">
-          {formatBytes(progress.uploadedBytes)} uploaded{backlog > 1 ? ` · ${backlog} chunks queued` : ''}
-        </span>
+    <div data-testid="recording-indicator" className="absolute left-3 top-3 max-w-[calc(100%-6rem)] space-y-1.5">
+      <div className="flex w-fit items-center gap-2 rounded-md bg-black/70 px-2.5 py-1 text-xs font-medium text-white">
+        <span className={`size-2 rounded-full ${state === 'recording' ? 'animate-pulse bg-red-500' : 'bg-slate-400'}`} aria-hidden />
+        <span>{label}</span>
+        {state === 'recording' && progress ? (
+          <span className="tabular-nums text-slate-300">
+            {formatBytes(progress.uploadedBytes)} uploaded{backlog > 1 ? ` · ${backlog} chunks queued` : ''}
+          </span>
+        ) : null}
+      </div>
+      {/* Chunks are retried, so this can clear by itself; until then the interviewer should know. */}
+      {uploadError ? (
+        <p role="status" data-testid="recording-upload-error" className="rounded-md bg-bad/90 px-2.5 py-1 text-xs text-white">
+          Upload failing, retrying: {uploadError}
+        </p>
       ) : null}
     </div>
   );
