@@ -20,6 +20,31 @@
   --color-navy-800: #131c31;
   --animate-scan: scan 1.4s ease-in-out both;
   --animate-pulse-dot: pulse-dot 2s ease-in-out infinite;
+  /* Sign-in and sign-up pages. */
+  --animate-scan-loop: scan 3.6s ease-in-out infinite;
+  --animate-rise: rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-float: float 6s ease-in-out infinite;
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-8px);
+    }
+  }
 
   @keyframes scan {
     from {

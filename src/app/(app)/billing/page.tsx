@@ -7,7 +7,7 @@ import { Button, Card, ErrorNote, PageHeader } from '@/components/ui';
 import { UsageMeter } from '@/components/usage-meter';
 import { api, ApiRequestError, errorMessage } from '@/lib/api';
 import { formatDate, formatDateTime } from '@/lib/format';
-import { CheckoutDismissed, openSubscriptionCheckout } from '@/lib/razorpay';
+import { CheckoutDismissed, openOrderCheckout } from '@/lib/razorpay';
 import { useSessionUser } from '@/lib/session';
 import { useSubscription } from '@/lib/subscription';
 
@@ -25,6 +25,9 @@ const STATUS: Record<SubscriptionStatus, { label: string; className: string }> =
   EXPIRED: { label: 'Expired', className: 'bg-slate-100 text-ink-soft' },
   PAUSED: { label: 'Paused', className: 'bg-amber-50 text-warn' },
 };
+
+/** "30 days": how long one payment lasts. */
+const periodLabel = (plan: PlanDTO) => `${plan.durationDays} days`;
 
 function StatusBadge({ status }: { status: SubscriptionStatus }) {
   const { label, className } = STATUS[status] ?? STATUS.CREATED;
@@ -44,17 +47,17 @@ function PlanOffer({ plan, busy, onSubscribe }: { plan: PlanDTO; busy: boolean; 
           <span data-testid="plan-price" className="text-3xl font-semibold tracking-tight">
             {plan.amountDisplay}
           </span>
-          <span className="text-sm text-ink-soft"> / {plan.interval === 'monthly' ? 'month' : plan.interval}</span>
+          <span className="text-sm text-ink-soft"> / {periodLabel(plan)}</span>
         </p>
       </div>
       <div className="space-y-4 px-6 py-5">
         <p className="text-sm text-ink-soft">{plan.description}</p>
         <ul className="space-y-2 text-sm">
           {[
-            `${plan.interviewsPerPeriod} monitored interviews every month`,
+            `${plan.interviewsPerPeriod} monitored interviews for ${periodLabel(plan)}`,
             'Live monitoring, AI screen alerts and recordings',
             'AI summary and report for every interview',
-            'Renews automatically; the count resets each month',
+            'One-time payment, no auto-renewal',
           ].map((feature) => (
             <li key={feature} className="flex items-start gap-2">
               <CircleCheck className="mt-0.5 size-4 shrink-0 text-good" aria-hidden />
@@ -64,7 +67,7 @@ function PlanOffer({ plan, busy, onSubscribe }: { plan: PlanDTO; busy: boolean; 
         </ul>
         <Button onClick={onSubscribe} disabled={busy} className="w-full" data-testid="subscribe">
           {busy ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <CreditCard className="size-4" aria-hidden />}
-          {busy ? 'Opening checkout…' : `Subscribe for ${plan.amountDisplay} / month`}
+          {busy ? 'Opening checkout…' : `Pay ${plan.amountDisplay} for ${periodLabel(plan)}`}
         </Button>
         <p className="flex items-center justify-center gap-1.5 text-xs text-ink-muted">
           <ShieldCheck className="size-3.5" aria-hidden /> Payments are handled securely by Razorpay.
@@ -84,7 +87,7 @@ function CurrentPlan({ subscription }: { subscription: SubscriptionDTO }) {
           <p className="text-sm text-ink-soft">Current plan</p>
           <p className="mt-0.5 text-lg font-semibold">{plan.name}</p>
           <p className="text-sm text-ink-soft">
-            {plan.amountDisplay} / {plan.interval === 'monthly' ? 'month' : plan.interval}
+            {plan.amountDisplay} / {periodLabel(plan)}
           </p>
         </div>
         <StatusBadge status={status} />
@@ -95,13 +98,13 @@ function CurrentPlan({ subscription }: { subscription: SubscriptionDTO }) {
           <p className="mt-2 text-xs text-ink-muted">
             {endingAfterCancel
               ? `Your plan was cancelled. It keeps working until ${formatDate(currentPeriodEnd)}.`
-              : `Billing period ${formatDate(currentPeriodStart)} – ${formatDate(currentPeriodEnd)}. The count resets and the plan renews on ${formatDate(currentPeriodEnd)}.`}
+              : `Valid ${formatDate(currentPeriodStart)} – ${formatDate(currentPeriodEnd)}. It doesn’t renew by itself; pay again after ${formatDate(currentPeriodEnd)} to continue.`}
           </p>
         </div>
       ) : (
         <p className="mt-4 rounded-lg bg-canvas px-3 py-2 text-sm text-ink-soft">
-          {status === 'HALTED'
-            ? 'The last renewal payment failed, so new interviews are paused. Subscribe again to continue.'
+          {status === 'EXPIRED' || status === 'COMPLETED'
+            ? 'This plan has ended, so you can’t create new interviews. Pay again to continue.'
             : 'This plan is not active, so you can’t create new interviews.'}
         </p>
       )}
@@ -191,9 +194,11 @@ export default function BillingPage() {
     setBusy('checkout');
     try {
       const checkout = await api<CheckoutResponse>('/api/subscription/checkout', { body: {} });
-      const paid = await openSubscriptionCheckout({
+      const paid = await openOrderCheckout({
         keyId: checkout.keyId,
-        subscriptionId: checkout.subscriptionId,
+        orderId: checkout.orderId,
+        amount: checkout.plan.amount,
+        currency: checkout.plan.currency,
         description: checkout.plan.name,
         prefill: { name: user?.name, email: user?.email },
       });
@@ -201,7 +206,7 @@ export default function BillingPage() {
       const verified = await api<VerifyPaymentResponse>('/api/subscription/verify', {
         body: {
           razorpayPaymentId: paid.razorpay_payment_id,
-          razorpaySubscriptionId: paid.razorpay_subscription_id,
+          razorpayOrderId: paid.razorpay_order_id,
           razorpaySignature: paid.razorpay_signature,
         },
       });

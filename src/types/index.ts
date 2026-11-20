@@ -295,7 +295,8 @@ export interface PlanDTO {
   amount: number;
   amountDisplay: string;
   currency: string;
-  interval: string;
+  /** How long one payment lasts. Payments are one-time, with no auto-renewal. */
+  durationDays: number;
   interviewsPerPeriod: number;
 }
 
@@ -346,15 +347,16 @@ export interface SubscriptionMe {
   transactions: TransactionDTO[];
 }
 
+/** A Razorpay order for one payment: open Checkout with `order_id: orderId`. */
 export interface CheckoutResponse {
   keyId: string;
-  subscriptionId: string;
+  orderId: string;
   plan: PlanDTO;
 }
 
 export interface VerifyPaymentResponse {
   status: 'active' | 'pending';
-  subscription: SubscriptionDTO;
+  subscription: SubscriptionDTO | null;
 }
 
 export interface ApiErrorBody {

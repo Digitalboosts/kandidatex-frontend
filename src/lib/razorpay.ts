@@ -1,16 +1,20 @@
-/** Razorpay Checkout (https://razorpay.com/docs/payments/subscriptions/integration-guide/). */
+/** Razorpay Checkout for one-time order payments (https://razorpay.com/docs/payments/payment-gateway/web-integration/standard/). */
 
 const SCRIPT_URL = 'https://checkout.razorpay.com/v1/checkout.js';
 
+/** What Checkout hands back after a successful payment. All three go to /api/subscription/verify. */
 export interface RazorpaySuccess {
   razorpay_payment_id: string;
-  razorpay_subscription_id: string;
+  razorpay_order_id: string;
   razorpay_signature: string;
 }
 
 interface RazorpayOptions {
   key: string;
-  subscription_id: string;
+  order_id: string;
+  /** Smallest currency unit (paise). Must match the order. */
+  amount: number;
+  currency: string;
   name?: string;
   description?: string;
   prefill?: { name?: string; email?: string };
@@ -57,13 +61,15 @@ function loadScript(): Promise<void> {
 }
 
 /**
- * Opens Checkout for a subscription and resolves with the three values to send
- * to /api/subscription/verify. Rejects with CheckoutDismissed if the user
- * closes it, or an Error if the payment fails.
+ * Opens Checkout for an order created by /api/subscription/checkout and
+ * resolves with the three values to send to /api/subscription/verify. Rejects
+ * with CheckoutDismissed if the user closes it, or an Error if the payment fails.
  */
-export async function openSubscriptionCheckout(options: {
+export async function openOrderCheckout(options: {
   keyId: string;
-  subscriptionId: string;
+  orderId: string;
+  amount: number;
+  currency: string;
   description: string;
   prefill?: { name?: string; email?: string };
 }): Promise<RazorpaySuccess> {
@@ -75,12 +81,20 @@ export async function openSubscriptionCheckout(options: {
     let failure: string | null = null;
     const checkout = new Razorpay({
       key: options.keyId,
-      subscription_id: options.subscriptionId,
+      order_id: options.orderId,
+      amount: options.amount,
+      currency: options.currency,
       name: 'Kandidatex',
       description: options.description,
       prefill: options.prefill,
       theme: { color: '#2563eb' },
-      handler: resolve,
+      handler: (response) => {
+        if (!response.razorpay_payment_id || !response.razorpay_order_id || !response.razorpay_signature) {
+          reject(new Error('Razorpay did not return the payment details. If money was taken, it will be confirmed shortly.'));
+          return;
+        }
+        resolve(response);
+      },
       modal: {
         // A failed attempt keeps Checkout open so the user can retry; only report it if they then give up.
         ondismiss: () => reject(failure ? new Error(failure) : new CheckoutDismissed()),
